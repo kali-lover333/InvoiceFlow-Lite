@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   users: 'invoiceflow-lite-users',
   invoices: 'invoiceflow-lite-invoices',
   session: 'invoiceflow-lite-session',
+  theme: 'invoiceflow-lite-theme',
 }
 
 const ADMIN_CREDENTIALS = {
@@ -361,6 +362,14 @@ function DownloadIcon() {
 
 function ShieldIcon() {
   return <Icon title="Security"><path d="M12 3 6 6v5c0 4.2 2.7 7.8 6 10 3.3-2.2 6-5.8 6-10V6l-6-3Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /><path d="m9.8 12 1.7 1.7L14.7 10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></Icon>
+}
+
+function SunIcon() {
+  return <Icon title="Light mode"><circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.7" /><path d="M12 2.8v2.4M12 18.8v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.8 12h2.4M18.8 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></Icon>
+}
+
+function MoonIcon() {
+  return <Icon title="Dark mode"><path d="M20 14.3A8.2 8.2 0 1 1 9.7 4a6.8 6.8 0 1 0 10.3 10.3Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></Icon>
 }
 
 function UsersIcon() {
@@ -1045,7 +1054,7 @@ function AdminPage({ users, setUsers, currentUser }) {
   )
 }
 
-function AppShell({ currentUser, onLogout }) {
+function AppShell({ currentUser, onLogout, theme, onToggleTheme }) {
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -1116,6 +1125,15 @@ function AppShell({ currentUser, onLogout }) {
             <h1>{title}</h1>
           </div>
           <div className="topbar-actions">
+            <button
+              type="button"
+              className="theme-toggle button-secondary"
+              onClick={onToggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            </button>
             <div className="topbar-chip">{currentUser?.email || 'local session'}</div>
             <Link className="button-primary small" to="/create">
               <CreateIcon />
@@ -1142,8 +1160,29 @@ function SiteFooter() {
   )
 }
 
+function useThemeMode() {
+  const [theme, setTheme] = useState(() => {
+    const storedTheme = window.localStorage.getItem(STORAGE_KEYS.theme)
+
+    if (storedTheme === 'dark' || storedTheme === 'light') {
+      return storedTheme
+    }
+
+    return 'dark'
+  })
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme
+    window.localStorage.setItem(STORAGE_KEYS.theme, theme)
+  }, [theme])
+
+  return { theme, setTheme }
+}
+
 function AppRoutes() {
   const { users, setUsers, invoices, setInvoices, session, setSession } = useAuthData()
+  const { theme, setTheme } = useThemeMode()
   const currentUser = users.find((user) => user.email === session?.email) || null
 
   useEffect(() => {
@@ -1165,7 +1204,12 @@ function AppRoutes() {
           path="/"
           element={
             <RequireAuth session={session} currentUser={currentUser}>
-              <AppShell currentUser={currentUser} onLogout={() => setSession(null)} />
+              <AppShell
+                currentUser={currentUser}
+                onLogout={() => setSession(null)}
+                theme={theme}
+                onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+              />
             </RequireAuth>
           }
         >

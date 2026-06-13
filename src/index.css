@@ -5,12 +5,60 @@
   font-family: 'Manrope', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.92);
-  background: #0a0a0a;
+  color: var(--app-text-primary);
+  background: var(--app-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --app-bg:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 30%),
+    radial-gradient(circle at top right, rgba(6, 182, 212, 0.14), transparent 34%),
+    linear-gradient(180deg, #0a0a0a, #050505);
+  --app-text-primary: rgba(255, 255, 255, 0.92);
+  --app-text-secondary: rgba(255, 255, 255, 0.72);
+  --app-text-muted: rgba(255, 255, 255, 0.62);
+  --panel-bg: rgba(255, 255, 255, 0.06);
+  --panel-border: rgba(255, 255, 255, 0.12);
+  --panel-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
+  --surface-bg: rgba(255, 255, 255, 0.04);
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --input-bg: rgba(9, 9, 12, 0.72);
+  --input-border: rgba(255, 255, 255, 0.12);
+  --button-gradient: linear-gradient(135deg, #7c3aed, #06b6d4);
+  --button-shadow: 0 14px 40px rgba(124, 58, 237, 0.35);
+  --button-shadow-hover: 0 0 24px rgba(6, 182, 212, 0.34), 0 18px 42px rgba(124, 58, 237, 0.36);
+  --accent-link: #67e8f9;
+  --brand-gradient: linear-gradient(135deg, #7c3aed, #06b6d4);
+  --footer-color: rgba(192, 132, 252, 0.9);
+  --footer-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(124, 58, 237, 0.55);
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --app-bg:
+    radial-gradient(circle at top left, rgba(255, 182, 216, 0.5), transparent 28%),
+    radial-gradient(circle at top right, rgba(167, 196, 255, 0.36), transparent 32%),
+    linear-gradient(180deg, #ffffff, #f6f0ff 58%, #ece6ff);
+  --app-text-primary: rgba(34, 20, 63, 0.96);
+  --app-text-secondary: rgba(61, 42, 95, 0.76);
+  --app-text-muted: rgba(77, 55, 118, 0.6);
+  --panel-bg: rgba(255, 255, 255, 0.72);
+  --panel-border: rgba(153, 102, 255, 0.28);
+  --panel-shadow: 0 20px 70px rgba(88, 44, 143, 0.12);
+  --surface-bg: rgba(255, 255, 255, 0.8);
+  --surface-border: rgba(165, 121, 255, 0.2);
+  --input-bg: rgba(255, 255, 255, 0.88);
+  --input-border: rgba(154, 118, 255, 0.3);
+  --button-gradient: linear-gradient(135deg, #ff7ca8, #9b5cff, #4fb3ff);
+  --button-shadow: 0 16px 38px rgba(155, 92, 255, 0.22);
+  --button-shadow-hover: 0 0 18px rgba(255, 124, 168, 0.24), 0 18px 42px rgba(79, 179, 255, 0.18);
+  --accent-link: #7c3aed;
+  --brand-gradient: linear-gradient(135deg, #ff7ca8, #9b5cff, #4fb3ff);
+  --footer-color: rgba(98, 45, 175, 0.95);
+  --footer-shadow: 0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(79, 179, 255, 0.25);
+  color-scheme: light;
 }
 
 html {
@@ -20,10 +68,9 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 30%),
-    radial-gradient(circle at top right, rgba(6, 182, 212, 0.14), transparent 34%),
-    linear-gradient(180deg, #0a0a0a, #050505);
+  color: var(--app-text-primary);
+  background: var(--app-bg);
+  transition: background 320ms ease, color 320ms ease;
 }
 
 #root {
