@@ -520,7 +520,6 @@ function AuthPage({ mode, users, session, setUsers, setSession }) {
           <span>Demo login</span>
           <strong>{DEMO_USER.email}</strong>
           <strong>{DEMO_USER.password}</strong>
-          <span className="demo-admin">Admin: {ADMIN_CREDENTIALS.email} / {ADMIN_CREDENTIALS.password}</span>
         </div>
       </section>
 
