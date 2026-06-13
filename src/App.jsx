@@ -1054,7 +1054,7 @@ function AdminPage({ users, setUsers, currentUser }) {
   )
 }
 
-function AppShell({ currentUser, onLogout, theme, onToggleTheme }) {
+function AppShell({ currentUser, onLogout }) {
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -1125,15 +1125,6 @@ function AppShell({ currentUser, onLogout, theme, onToggleTheme }) {
             <h1>{title}</h1>
           </div>
           <div className="topbar-actions">
-            <button
-              type="button"
-              className="theme-toggle button-secondary"
-              onClick={onToggleTheme}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
-            </button>
             <div className="topbar-chip">{currentUser?.email || 'local session'}</div>
             <Link className="button-primary small" to="/create">
               <CreateIcon />
@@ -1157,6 +1148,20 @@ function SiteFooter() {
     <footer className="site-footer">
       <span>Made by Kashif Khan Khalil</span>
     </footer>
+  )
+}
+
+function ThemeToggleButton({ theme, onToggleTheme }) {
+  return (
+    <button
+      type="button"
+      className="theme-toggle theme-toggle-floating"
+      onClick={onToggleTheme}
+      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+      <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
+    </button>
   )
 }
 
@@ -1197,6 +1202,7 @@ function AppRoutes() {
 
   return (
     <BrowserRouter>
+      <ThemeToggleButton theme={theme} onToggleTheme={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))} />
       <Routes>
         <Route path="/login" element={<AuthPage mode="login" users={users} session={session} setUsers={setUsers} setSession={setSession} />} />
         <Route path="/signup" element={<AuthPage mode="signup" users={users} session={session} setUsers={setUsers} setSession={setSession} />} />
