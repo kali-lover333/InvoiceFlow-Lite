@@ -8,13 +8,37 @@ const STORAGE_KEYS = {
   session: 'invoiceflow-lite-session',
 }
 
+const ADMIN_CREDENTIALS = {
+  email: 'admin@invoiceflow.com',
+  password: 'admin123',
+}
+
+const CURRENCY_OPTIONS = [
+  { code: 'USD', label: 'USD - $' },
+  { code: 'EUR', label: 'EUR - €' },
+  { code: 'GBP', label: 'GBP - £' },
+  { code: 'PKR', label: 'PKR - ₨' },
+  { code: 'AED', label: 'AED - د.إ' },
+  { code: 'SAR', label: 'SAR - ر.س' },
+]
+
+const ADMIN_USER = {
+  name: 'InvoiceFlow Admin',
+  email: ADMIN_CREDENTIALS.email,
+  password: ADMIN_CREDENTIALS.password,
+  role: 'admin',
+  active: true,
+}
+
 const DEMO_USER = {
   name: 'Nova Reed',
   email: 'demo@invoiceflow.lite',
   password: 'invoiceflow',
+  role: 'user',
+  active: true,
 }
 
-const seedUsers = [DEMO_USER]
+const seedUsers = [ADMIN_USER, DEMO_USER]
 
 const seedInvoices = [
   {
@@ -25,6 +49,7 @@ const seedInvoices = [
     invoiceDate: '2026-06-01',
     dueDate: '2026-06-15',
     taxRate: 8,
+    currency: 'USD',
     status: 'paid',
     notes: 'Creative direction, motion polish, and launch support.',
     items: [
@@ -40,6 +65,7 @@ const seedInvoices = [
     invoiceDate: '2026-06-05',
     dueDate: '2026-06-20',
     taxRate: 8,
+    currency: 'EUR',
     status: 'unpaid',
     notes: 'Analytics dashboard and workflow automation support.',
     items: [
@@ -55,11 +81,43 @@ const seedInvoices = [
     invoiceDate: '2026-06-09',
     dueDate: '2026-06-23',
     taxRate: 8,
+    currency: 'GBP',
     status: 'paid',
     notes: 'Retainer for interface tuning and release support.',
     items: [{ id: 'item-5', description: 'Weekly design retainer', quantity: 1, rate: 3200 }],
   },
 ]
+
+function normalizeUser(user) {
+  const isAdmin = String(user.email || '').toLowerCase() === ADMIN_CREDENTIALS.email
+
+  return {
+    ...user,
+    role: user.role || (isAdmin ? 'admin' : 'user'),
+    active: user.active ?? true,
+  }
+}
+
+function normalizeUsers(users) {
+  const normalized = Array.isArray(users) ? users.map(normalizeUser) : []
+
+  if (!normalized.some((user) => user.email?.toLowerCase() === ADMIN_CREDENTIALS.email)) {
+    normalized.unshift(ADMIN_USER)
+  }
+
+  return normalized
+}
+
+function normalizeInvoice(invoice) {
+  return {
+    ...invoice,
+    currency: invoice.currency || 'USD',
+  }
+}
+
+function normalizeInvoices(invoices) {
+  return Array.isArray(invoices) ? invoices.map(normalizeInvoice) : []
+}
 
 function readJson(key, fallback) {
   try {
@@ -70,12 +128,31 @@ function readJson(key, fallback) {
   }
 }
 
-function formatCurrency(value) {
+function formatCurrency(value, currency = 'USD') {
+  const selectedCurrency = CURRENCY_OPTIONS.some((option) => option.code === currency) ? currency : 'USD'
+
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: selectedCurrency,
+    currencyDisplay: 'narrowSymbol',
     maximumFractionDigits: 2,
   }).format(Number(value) || 0)
+}
+
+function formatRevenueSummary(invoices) {
+  const totalsByCurrency = invoices.reduce((accumulator, invoice) => {
+    const currency = invoice.currency || 'USD'
+    const totals = calculateTotals(invoice.items, invoice.taxRate)
+    accumulator[currency] = (accumulator[currency] || 0) + totals.total
+    return accumulator
+  }, {})
+
+  const summary = CURRENCY_OPTIONS.map((option) => {
+    const amount = totalsByCurrency[option.code]
+    return amount ? formatCurrency(amount, option.code) : null
+  }).filter(Boolean)
+
+  return summary.length ? summary.join(' · ') : formatCurrency(0, 'USD')
 }
 
 function formatDate(value) {
@@ -117,6 +194,7 @@ function createDraft() {
     invoiceDate: todayIso(),
     dueDate: futureIso(14),
     taxRate: 8,
+    currency: 'USD',
     notes: 'Thank you for choosing InvoiceFlow Lite.',
     items: [createItem()],
   }
@@ -151,6 +229,7 @@ async function exportInvoicePdf(invoice, ownerName) {
   const pageHeight = pdf.internal.pageSize.getHeight()
   const margin = 42
   const totals = calculateTotals(invoice.items, invoice.taxRate)
+  const currency = invoice.currency || 'USD'
 
   pdf.setFillColor(10, 10, 10)
   pdf.rect(0, 0, pageWidth, pageHeight, 'F')
@@ -175,8 +254,9 @@ async function exportInvoicePdf(invoice, ownerName) {
   pdf.text(`Email: ${invoice.clientEmail}`, margin, 170)
   pdf.text(`Invoice date: ${formatDate(invoice.invoiceDate)}`, margin, 186)
   pdf.text(`Due date: ${formatDate(invoice.dueDate)}`, margin, 202)
+  pdf.text(`Currency: ${currency}`, margin, 218)
 
-  let y = 240
+  let y = 256
   pdf.setFont('helvetica', 'bold')
   pdf.setTextColor(118, 168, 255)
   pdf.text('Line Items', margin, y)
@@ -197,8 +277,8 @@ async function exportInvoicePdf(invoice, ownerName) {
     pdf.setTextColor(231, 236, 245)
     pdf.text(String(item.description), margin + 12, y)
     pdf.text(String(item.quantity), margin + 300, y)
-    pdf.text(formatCurrency(item.rate), margin + 346, y)
-    pdf.text(formatCurrency(amount), margin + 448, y)
+    pdf.text(formatCurrency(item.rate, currency), margin + 346, y)
+    pdf.text(formatCurrency(amount, currency), margin + 448, y)
     y += 20
   })
 
@@ -209,12 +289,12 @@ async function exportInvoicePdf(invoice, ownerName) {
 
   pdf.setFont('helvetica', 'bold')
   pdf.setTextColor(255, 255, 255)
-  pdf.text(`Subtotal: ${formatCurrency(totals.subtotal)}`, margin + 300, y)
+  pdf.text(`Subtotal: ${formatCurrency(totals.subtotal, currency)}`, margin + 300, y)
   y += 18
-  pdf.text(`Tax (${invoice.taxRate}%): ${formatCurrency(totals.taxAmount)}`, margin + 300, y)
+  pdf.text(`Tax (${invoice.taxRate}%): ${formatCurrency(totals.taxAmount, currency)}`, margin + 300, y)
   y += 18
   pdf.setTextColor(6, 182, 212)
-  pdf.text(`Total: ${formatCurrency(totals.total)}`, margin + 300, y)
+  pdf.text(`Total: ${formatCurrency(totals.total, currency)}`, margin + 300, y)
 
   if (invoice.notes) {
     pdf.setFont('helvetica', 'normal')
@@ -226,8 +306,8 @@ async function exportInvoicePdf(invoice, ownerName) {
 }
 
 function useAuthData() {
-  const [users, setUsers] = useState(() => readJson(STORAGE_KEYS.users, seedUsers))
-  const [invoices, setInvoices] = useState(() => readJson(STORAGE_KEYS.invoices, seedInvoices))
+  const [users, setUsers] = useState(() => normalizeUsers(readJson(STORAGE_KEYS.users, seedUsers)))
+  const [invoices, setInvoices] = useState(() => normalizeInvoices(readJson(STORAGE_KEYS.invoices, seedInvoices)))
   const [session, setSession] = useState(() => readJson(STORAGE_KEYS.session, null))
 
   useEffect(() => {
@@ -283,15 +363,31 @@ function ShieldIcon() {
   return <Icon title="Security"><path d="M12 3 6 6v5c0 4.2 2.7 7.8 6 10 3.3-2.2 6-5.8 6-10V6l-6-3Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /><path d="m9.8 12 1.7 1.7L14.7 10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></Icon>
 }
 
+function UsersIcon() {
+  return <Icon title="Users"><path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3ZM8 12a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm8 2c-2.2 0-4 1.5-4 3.4V20h8v-2.6c0-1.9-1.8-3.4-4-3.4Zm-8 0c-2.2 0-4 1.5-4 3.4V20h8v-2.6c0-1.9-1.8-3.4-4-3.4Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></Icon>
+}
+
 function StatusBadge({ status }) {
   return <span className={`status-badge status-${status}`}>{status}</span>
 }
 
-function RequireAuth({ session, children }) {
+function UserStatusBadge({ active }) {
+  return <span className={`status-badge user-status ${active ? 'status-active' : 'status-inactive'}`}>{active ? 'active' : 'inactive'}</span>
+}
+
+function RequireAuth({ session, currentUser, children }) {
   const location = useLocation()
 
-  if (!session) {
+  if (!session || !currentUser || currentUser.active === false) {
     return <Navigate to="/login" replace state={{ from: location }} />
+  }
+
+  return children
+}
+
+function RequireAdmin({ currentUser, children }) {
+  if (currentUser?.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />
   }
 
   return children
@@ -327,7 +423,12 @@ function AuthPage({ mode, users, session, setUsers, setSession }) {
         return
       }
 
-      setSession({ email: matchedUser.email, name: matchedUser.name })
+      if (matchedUser.active === false) {
+        setError('This account is deactivated. Contact the admin to reactivate it.')
+        return
+      }
+
+      setSession({ email: matchedUser.email, name: matchedUser.name, role: matchedUser.role || 'user' })
       navigate('/dashboard', { replace: true })
       return
     }
@@ -346,10 +447,12 @@ function AuthPage({ mode, users, session, setUsers, setSession }) {
       name: form.name.trim(),
       email: form.email.trim(),
       password: form.password,
+      role: 'user',
+      active: true,
     }
 
     setUsers((current) => [...current, nextUser])
-    setSession({ email: nextUser.email, name: nextUser.name })
+    setSession({ email: nextUser.email, name: nextUser.name, role: nextUser.role })
     navigate('/dashboard', { replace: true })
   }
 
@@ -417,8 +520,11 @@ function AuthPage({ mode, users, session, setUsers, setSession }) {
           <span>Demo login</span>
           <strong>{DEMO_USER.email}</strong>
           <strong>{DEMO_USER.password}</strong>
+          <span className="demo-admin">Admin: {ADMIN_CREDENTIALS.email} / {ADMIN_CREDENTIALS.password}</span>
         </div>
       </section>
+
+      <SiteFooter />
     </div>
   )
 }
@@ -437,15 +543,15 @@ function DashboardPage({ invoices, user }) {
   const stats = useMemo(() => {
     const paidInvoices = invoices.filter((invoice) => invoice.status === 'paid')
     const unpaidInvoices = invoices.filter((invoice) => invoice.status !== 'paid')
-    const revenue = paidInvoices.reduce((sum, invoice) => sum + calculateTotals(invoice.items, invoice.taxRate).total, 0)
 
     return {
       total: invoices.length,
       paid: paidInvoices.length,
       unpaid: unpaidInvoices.length,
-      revenue,
     }
   }, [invoices])
+
+  const revenueSummary = useMemo(() => formatRevenueSummary(invoices), [invoices])
 
   return (
     <div className="page-stack fade-in">
@@ -458,8 +564,8 @@ function DashboardPage({ invoices, user }) {
           </p>
         </div>
         <div className="hero-metric">
-          <span>Revenue locked in</span>
-          <strong>{formatCurrency(stats.revenue)}</strong>
+          <span>Revenue by currency</span>
+          <strong>{revenueSummary}</strong>
         </div>
       </section>
 
@@ -467,7 +573,17 @@ function DashboardPage({ invoices, user }) {
         <StatCard label="Total" value={stats.total.toString()} accent="violet" />
         <StatCard label="Paid" value={stats.paid.toString()} accent="cyan" />
         <StatCard label="Unpaid" value={stats.unpaid.toString()} accent="rose" />
-        <StatCard label="Revenue" value={formatCurrency(stats.revenue)} accent="emerald" />
+        <StatCard label="Revenue" value={revenueSummary} accent="emerald" />
+      </section>
+
+      <section className="glass-panel content-panel revenue-panel">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Currency aware</p>
+            <h3>Revenue snapshot</h3>
+          </div>
+        </div>
+        <div className="revenue-summary">{revenueSummary}</div>
       </section>
 
       <section className="glass-panel content-panel">
@@ -495,8 +611,9 @@ function DashboardPage({ invoices, user }) {
                 <div className="recent-meta">
                   <span>Due {formatDate(invoice.dueDate)}</span>
                   <span>{invoice.items.length} line items</span>
+                  <span>{invoice.currency || 'USD'}</span>
                 </div>
-                <div className="recent-total">{formatCurrency(totals.total)}</div>
+                <div className="recent-total">{formatCurrency(totals.total, invoice.currency)}</div>
               </article>
             )
           })}
@@ -566,6 +683,7 @@ function CreateInvoicePage({ invoices, setInvoices }) {
       invoiceDate: draft.invoiceDate,
       dueDate: draft.dueDate,
       taxRate: Number(draft.taxRate) || 0,
+      currency: draft.currency || 'USD',
       status: 'unpaid',
       notes: draft.notes.trim(),
       items: cleanItems,
@@ -608,6 +726,16 @@ function CreateInvoicePage({ invoices, setInvoices }) {
             <input type="number" min="0" step="0.1" value={draft.taxRate} onChange={(event) => updateField('taxRate', event.target.value)} />
           </label>
           <label className="field">
+            <span>Currency</span>
+            <select value={draft.currency} onChange={(event) => updateField('currency', event.target.value)}>
+              {CURRENCY_OPTIONS.map((option) => (
+                <option key={option.code} value={option.code}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
             <span>Notes</span>
             <input value={draft.notes} onChange={(event) => updateField('notes', event.target.value)} placeholder="Delivery notes, scope, or payment details" />
           </label>
@@ -646,7 +774,7 @@ function CreateInvoicePage({ invoices, setInvoices }) {
                         <input type="number" min="0" step="0.01" value={item.rate} onChange={(event) => updateItem(item.id, 'rate', event.target.value)} />
                       </td>
                       <td>
-                        <span className="amount-pill">{formatCurrency(amount)}</span>
+                        <span className="amount-pill">{formatCurrency(amount, draft.currency)}</span>
                       </td>
                       <td>
                         <button type="button" className="icon-button" onClick={() => removeItem(item.id)} aria-label="Remove item">×</button>
@@ -674,9 +802,9 @@ function CreateInvoicePage({ invoices, setInvoices }) {
           </div>
 
           <div className="summary-list">
-            <div><span>Subtotal</span><strong>{formatCurrency(totals.subtotal)}</strong></div>
-            <div><span>Tax</span><strong>{formatCurrency(totals.taxAmount)}</strong></div>
-            <div className="summary-total"><span>Total</span><strong>{formatCurrency(totals.total)}</strong></div>
+            <div><span>Subtotal</span><strong>{formatCurrency(totals.subtotal, draft.currency)}</strong></div>
+            <div><span>Tax</span><strong>{formatCurrency(totals.taxAmount, draft.currency)}</strong></div>
+            <div className="summary-total"><span>Total</span><strong>{formatCurrency(totals.total, draft.currency)}</strong></div>
           </div>
 
           <div className="summary-card">
@@ -781,8 +909,8 @@ function InvoicesPage({ invoices, setInvoices, onDownloadPdf }) {
                       </td>
                       <td><StatusBadge status={invoice.status} /></td>
                       <td>
-                        <strong>{formatCurrency(totals.total)}</strong>
-                        <span>Tax {invoice.taxRate}%</span>
+                        <strong>{formatCurrency(totals.total, invoice.currency)}</strong>
+                        <span>{invoice.currency || 'USD'} / Tax {invoice.taxRate}%</span>
                       </td>
                       <td>
                         <div className="row-actions">
@@ -825,6 +953,99 @@ function EmptyState({ title, description }) {
   )
 }
 
+function AdminPage({ users, setUsers, currentUser }) {
+  const userStats = useMemo(() => {
+    const activeUsers = users.filter((user) => user.active !== false)
+    const inactiveUsers = users.filter((user) => user.active === false)
+
+    return {
+      total: users.length,
+      active: activeUsers.length,
+      inactive: inactiveUsers.length,
+    }
+  }, [users])
+
+  const toggleUserActive = (email) => {
+    if (email.toLowerCase() === ADMIN_CREDENTIALS.email) return
+
+    setUsers((current) =>
+      current.map((user) =>
+        user.email.toLowerCase() === email.toLowerCase() ? { ...user, active: user.active === false } : user,
+      ),
+    )
+  }
+
+  return (
+    <div className="page-stack fade-in">
+      <section className="glass-panel content-panel">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Admin control center</p>
+            <h3>User management</h3>
+          </div>
+          <div className="topbar-chip">Signed in as {currentUser?.email}</div>
+        </div>
+
+        <section className="stats-grid admin-stats">
+          <StatCard label="Users" value={userStats.total.toString()} accent="violet" />
+          <StatCard label="Active" value={userStats.active.toString()} accent="emerald" />
+          <StatCard label="Inactive" value={userStats.inactive.toString()} accent="rose" />
+        </section>
+
+        <div className="table-shell admin-table-shell">
+          <table className="invoice-table admin-table">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => {
+                const isProtectedAdmin = user.email.toLowerCase() === ADMIN_CREDENTIALS.email
+
+                return (
+                  <tr key={user.email}>
+                    <td>
+                      <strong>{user.name}</strong>
+                      <span>{isProtectedAdmin ? 'Primary admin account' : 'Registered user'}</span>
+                    </td>
+                    <td>
+                      <strong>{user.email}</strong>
+                      <span>{user.role || 'user'}</span>
+                    </td>
+                    <td>
+                      <span className="status-badge role-badge">{user.role || 'user'}</span>
+                    </td>
+                    <td>
+                      <UserStatusBadge active={user.active !== false} />
+                    </td>
+                    <td>
+                      <div className="row-actions">
+                        <button
+                          type="button"
+                          className="action-button"
+                          onClick={() => toggleUserActive(user.email)}
+                          disabled={isProtectedAdmin}
+                        >
+                          {user.active === false ? 'Activate' : 'Deactivate'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 function AppShell({ currentUser, onLogout }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -832,6 +1053,7 @@ function AppShell({ currentUser, onLogout }) {
   const title = useMemo(() => {
     if (location.pathname.includes('/create')) return 'Create Invoice'
     if (location.pathname.includes('/invoices')) return 'Invoice List'
+    if (location.pathname.includes('/admin')) return 'Admin Panel'
     return 'Dashboard'
   }, [location.pathname])
 
@@ -860,6 +1082,12 @@ function AppShell({ currentUser, onLogout }) {
               <CreateIcon />
               <span>Create</span>
             </NavLink>
+            {currentUser?.role === 'admin' ? (
+              <NavLink to="/admin" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                <UsersIcon />
+                <span>Admin</span>
+              </NavLink>
+            ) : null}
           </nav>
         </div>
 
@@ -901,7 +1129,17 @@ function AppShell({ currentUser, onLogout }) {
           <Outlet />
         </div>
       </main>
+
+      <SiteFooter />
     </div>
+  )
+}
+
+function SiteFooter() {
+  return (
+    <footer className="site-footer">
+      <span>Made by Kashif Khan Khalil</span>
+    </footer>
   )
 }
 
@@ -913,6 +1151,12 @@ function AppRoutes() {
     document.title = 'InvoiceFlow Lite'
   }, [])
 
+  useEffect(() => {
+    if (session && currentUser?.active === false) {
+      setSession(null)
+    }
+  }, [currentUser, session, setSession])
+
   return (
     <BrowserRouter>
       <Routes>
@@ -921,7 +1165,7 @@ function AppRoutes() {
         <Route
           path="/"
           element={
-            <RequireAuth session={session}>
+            <RequireAuth session={session} currentUser={currentUser}>
               <AppShell currentUser={currentUser} onLogout={() => setSession(null)} />
             </RequireAuth>
           }
@@ -930,8 +1174,16 @@ function AppRoutes() {
           <Route path="dashboard" element={<DashboardPage invoices={invoices} user={currentUser} />} />
           <Route path="create" element={<CreateInvoicePage invoices={invoices} setInvoices={setInvoices} />} />
           <Route path="invoices" element={<InvoicesPage invoices={invoices} setInvoices={setInvoices} onDownloadPdf={(invoice) => exportInvoicePdf(invoice, currentUser?.name)} />} />
+          <Route
+            path="admin"
+            element={
+              <RequireAdmin currentUser={currentUser}>
+                <AdminPage users={users} setUsers={setUsers} currentUser={currentUser} />
+              </RequireAdmin>
+            }
+          />
         </Route>
-        <Route path="*" element={<Navigate to={session ? '/dashboard' : '/login'} replace />} />
+        <Route path="*" element={<Navigate to={session && currentUser?.active !== false ? '/dashboard' : '/login'} replace />} />
       </Routes>
     </BrowserRouter>
   )

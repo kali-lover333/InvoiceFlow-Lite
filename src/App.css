@@ -463,6 +463,24 @@ select:focus {
   box-shadow: 0 0 18px rgba(251, 113, 133, 0.22);
 }
 
+.status-active {
+  color: #bbf7d0;
+  background: rgba(74, 222, 128, 0.16);
+  box-shadow: 0 0 18px rgba(74, 222, 128, 0.22);
+}
+
+.status-inactive {
+  color: #fecdd3;
+  background: rgba(251, 113, 133, 0.16);
+  box-shadow: 0 0 18px rgba(251, 113, 133, 0.22);
+}
+
+.role-badge {
+  color: #e9d5ff;
+  background: rgba(124, 58, 237, 0.16);
+  box-shadow: 0 0 18px rgba(124, 58, 237, 0.22);
+}
+
 .summary-list {
   flex-direction: column;
   margin: 18px 0;
@@ -490,6 +508,16 @@ select:focus {
   color: #67e8f9;
 }
 
+.revenue-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.revenue-summary {
+  color: rgba(255, 255, 255, 0.84);
+  line-height: 1.7;
+}
+
 .summary-card,
 .demo-banner {
   padding: 16px;
@@ -514,6 +542,19 @@ select:focus {
 
 .recent-total {
   color: #67e8f9;
+}
+
+.admin-stats {
+  margin-bottom: 4px;
+}
+
+.admin-table thead th:nth-child(3),
+.admin-table thead th:nth-child(4) {
+  min-width: 120px;
+}
+
+.admin-table .status-badge {
+  white-space: nowrap;
 }
 
 .ledger-controls {
@@ -591,6 +632,12 @@ select:focus {
   align-items: flex-start;
 }
 
+.demo-admin {
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  color: rgba(192, 132, 252, 0.9);
+}
+
 .form-error {
   margin: 0;
   color: #fecdd3;
@@ -616,6 +663,25 @@ select:focus {
 
 .sidebar-footer strong {
   font-size: 1rem;
+}
+
+.site-footer {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 8px 0 4px;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(192, 132, 252, 0.9);
+  text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(124, 58, 237, 0.55);
+}
+
+.app-shell .site-footer {
+  margin-top: -4px;
+}
+
+.auth-shell .site-footer {
+  margin-top: 2px;
 }
 
 .sr-only {
@@ -707,6 +773,11 @@ select:focus {
   .feature-row {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .site-footer {
+    grid-column: auto;
+    padding-bottom: 10px;
   }
 
   .search-field {
