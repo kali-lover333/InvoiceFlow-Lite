@@ -1146,7 +1146,7 @@ function AppShell({ currentUser, onLogout }) {
 function SiteFooter() {
   return (
     <footer className="site-footer">
-      <span>Made by Kashif Khan Khalil</span>
+      <span>Developed by Kashif Khan Khalil</span>
     </footer>
   )
 }
