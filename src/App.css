@@ -840,3 +840,357 @@ select:focus {
     min-width: 0;
   }
 }
+
+/* ── Floating Invoice Cards ── */
+.floating-cards-container {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  margin-top: 2rem;
+}
+
+.floating-card {
+  position: absolute;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  width: 200px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+}
+
+.floating-card:hover {
+  transform: translateY(-6px) scale(1.03) !important;
+}
+
+.floating-card-1 {
+  top: 0;
+  left: 10%;
+  animation: floatCard1 4s ease-in-out infinite;
+  z-index: 3;
+}
+
+.floating-card-2 {
+  top: 40px;
+  left: 38%;
+  animation: floatCard2 5s ease-in-out infinite;
+  z-index: 2;
+}
+
+.floating-card-3 {
+  top: 10px;
+  left: 65%;
+  animation: floatCard3 4.5s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes floatCard1 {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  50% { transform: translateY(-12px) rotate(-2deg); }
+}
+
+@keyframes floatCard2 {
+  0%, 100% { transform: translateY(0px) rotate(1deg); }
+  50% { transform: translateY(-16px) rotate(1deg); }
+}
+
+@keyframes floatCard3 {
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  50% { transform: translateY(-10px) rotate(-1deg); }
+}
+
+.fc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.fc-label {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.5);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.fc-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+
+.fc-paid {
+  background: rgba(34,197,94,0.2);
+  color: #4ade80;
+  border: 1px solid rgba(74,222,128,0.3);
+}
+
+.fc-unpaid {
+  background: rgba(239,68,68,0.2);
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,0.3);
+}
+
+.fc-client {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 0.3rem;
+}
+
+.fc-amount {
+  font-size: 1.2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.3rem;
+}
+
+.fc-date {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+}
+
+/* Light mode floating cards */
+[data-theme="light"] .floating-card {
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(168,85,247,0.2);
+  box-shadow: 0 8px 32px rgba(168,85,247,0.15);
+}
+
+[data-theme="light"] .fc-client {
+  color: #1e1b4b;
+}
+
+[data-theme="light"] .fc-label {
+  color: rgba(30,27,75,0.5);
+}
+
+/* ══════════════════════════════════════
+   PREMIUM ROYAL ANIMATIONS & INTERACTIONS
+   ══════════════════════════════════════ */
+
+/* Global smooth transitions */
+*, *::before, *::after {
+  transition-property: transform, box-shadow, background, border-color, opacity, color;
+  transition-duration: 0.25s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Sidebar Nav Links ── */
+.nav-link {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 3px;
+  background: linear-gradient(180deg, #a855f7, #06b6d4);
+  transform: scaleY(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 0 4px 4px 0;
+}
+
+.nav-link:hover::before,
+.nav-link.active::before {
+  transform: scaleY(1);
+}
+
+.nav-link:hover {
+  transform: translateX(4px);
+  background: rgba(168, 85, 247, 0.15) !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.2);
+  color: #c084fc !important;
+}
+
+/* ── Stat Cards ── */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.stat-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(6,182,212,0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+}
+
+.stat-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(168, 85, 247, 0.25), 0 0 0 1px rgba(168,85,247,0.3);
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+.stat-card:hover::after {
+  opacity: 1;
+}
+
+.stat-card:hover strong {
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Buttons ── */
+.button-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.button-primary::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.5s ease, height 0.5s ease;
+}
+
+.button-primary:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.button-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px rgba(168, 85, 247, 0.5);
+  filter: brightness(1.1);
+}
+
+.button-primary:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+/* ── Invoice Table Rows ── */
+.invoice-row,
+tr {
+  transition: all 0.2s ease !important;
+}
+
+.invoice-row:hover,
+tbody tr:hover {
+  background: rgba(168, 85, 247, 0.08) !important;
+  box-shadow: inset 3px 0 0 #a855f7, 0 4px 20px rgba(168,85,247,0.1);
+  transform: translateX(3px);
+}
+
+/* ── Glass Panels ── */
+.glass-panel {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.glass-panel:hover {
+  box-shadow: 0 8px 40px rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+/* ── Input Fields ── */
+input, select, textarea {
+  transition: all 0.25s ease !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  transform: scale(1.01);
+  box-shadow: 0 0 0 2px rgba(168,85,247,0.4), 0 4px 20px rgba(168,85,247,0.15) !important;
+  border-color: #a855f7 !important;
+}
+
+/* ── Status Badges ── */
+.status-badge {
+  transition: all 0.2s ease !important;
+  cursor: pointer;
+}
+
+.status-badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px currentColor;
+  filter: brightness(1.2);
+}
+
+/* ── Action Buttons (edit, delete, download) ── */
+button:not(.button-primary):not(.theme-toggle) {
+  transition: all 0.2s ease !important;
+}
+
+button:not(.button-primary):not(.theme-toggle):hover {
+  transform: translateY(-2px) scale(1.05);
+  filter: brightness(1.2);
+}
+
+/* ── Brand Mark / Logo ── */
+.brand-mark {
+  transition: all 0.3s ease !important;
+}
+
+.brand-mark:hover {
+  transform: rotate(5deg) scale(1.1);
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+}
+
+/* ── Page Load Animation ── */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-card {
+  animation: fadeSlideIn 0.5s ease forwards;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* ── Topbar ── */
+.topbar {
+  transition: all 0.3s ease !important;
+}
+
+.topbar:hover {
+  box-shadow: 0 4px 30px rgba(168, 85, 247, 0.15);
+}
+
+/* ── Floating Cards Hover Enhancement ── */
+.floating-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ── Glow pulse on active nav ── */
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(168,85,247,0.3); }
+  50% { box-shadow: 0 0 25px rgba(168,85,247,0.6); }
+}
+
+.nav-link.active {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+

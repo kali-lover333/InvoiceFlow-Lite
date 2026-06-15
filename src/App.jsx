@@ -472,7 +472,7 @@ function AuthPage({ mode, users, session, setUsers, setSession }) {
 
       <section className="auth-hero glass-panel">
         <div className="brand-mark brand-mark-large">
-          <span>IF</span>
+          <span>IFKK</span>
         </div>
         <p className="eyebrow">InvoiceFlow Lite / secure local ledger</p>
         <h1>Build invoices in a dark, luminous control room.</h1>
@@ -484,6 +484,38 @@ function AuthPage({ mode, users, session, setUsers, setSession }) {
           <span className="feature-chip"><ShieldIcon /> Glass security</span>
           <span className="feature-chip"><InvoiceIcon /> Auto totals</span>
           <span className="feature-chip"><DownloadIcon /> PDF export</span>
+        </div>
+
+        <div className="floating-cards-container">
+          <div className="floating-card floating-card-1">
+            <div className="fc-header">
+              <span className="fc-label">INV-041</span>
+              <span className="fc-badge fc-paid">Paid</span>
+            </div>
+            <div className="fc-client">Helix Studio</div>
+            <div className="fc-amount">$1,296.00</div>
+            <div className="fc-date">Due: Jun 15, 2026</div>
+          </div>
+
+          <div className="floating-card floating-card-2">
+            <div className="fc-header">
+              <span className="fc-label">INV-042</span>
+              <span className="fc-badge fc-unpaid">Unpaid</span>
+            </div>
+            <div className="fc-client">Nova Agency</div>
+            <div className="fc-amount">$3,450.00</div>
+            <div className="fc-date">Due: Jun 20, 2026</div>
+          </div>
+
+          <div className="floating-card floating-card-3">
+            <div className="fc-header">
+              <span className="fc-label">INV-043</span>
+              <span className="fc-badge fc-paid">Paid</span>
+            </div>
+            <div className="fc-client">Pixel Works</div>
+            <div className="fc-amount">$890.00</div>
+            <div className="fc-date">Due: Jun 10, 2026</div>
+          </div>
         </div>
       </section>
 
@@ -525,11 +557,7 @@ function AuthPage({ mode, users, session, setUsers, setSession }) {
           <Link to={isLogin ? '/signup' : '/login'}>{isLogin ? 'Sign up here' : 'Go to login'}</Link>
         </p>
 
-        <div className="demo-banner">
-          <span>Demo login</span>
-          <strong>{DEMO_USER.email}</strong>
-          <strong>{DEMO_USER.password}</strong>
-        </div>
+
       </section>
 
       <SiteFooter />
@@ -1070,7 +1098,7 @@ function AppShell({ currentUser, onLogout }) {
       <aside className="sidebar glass-panel">
         <div>
           <div className="brand-lockup sidebar-brand">
-            <div className="brand-mark"><span>IF</span></div>
+            <div className="brand-mark"><span>IFKK</span></div>
             <div>
               <p className="eyebrow">InvoiceFlow Lite</p>
               <h2>Neural billing</h2>
@@ -1191,7 +1219,7 @@ function AppRoutes() {
   const currentUser = users.find((user) => user.email === session?.email) || null
 
   useEffect(() => {
-    document.title = 'InvoiceFlow Lite'
+    document.title = 'InvoiceFlow by Kashif Khan Khalil'
   }, [])
 
   useEffect(() => {
